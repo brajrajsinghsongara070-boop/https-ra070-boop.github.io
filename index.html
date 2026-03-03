@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>milk.io - Good milk healthy milk</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#1e88e5;
+  --secondary:#e3f2fd;
+  --accent:#43a047;
+  --dark:#1c1c1c;
+  --light:#ffffff;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+
+body{background:#f9fbfd;color:#333;}
+
+header{
+  background:var(--primary);
+  color:white;
+  padding:20px 15px;
+  text-align:center;
+}
+
+header h1{font-size:24px;font-weight:600;}
+header p{font-size:14px;opacity:0.9;}
+
+.container{padding:15px;max-width:1200px;margin:auto;}
+
+.filters{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  margin-bottom:15px;
+}
+
+.filters button{
+  background:var(--secondary);
+  border:none;
+  padding:8px 14px;
+  border-radius:20px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.filters button.active{
+  background:var(--primary);
+  color:white;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:15px;
+}
+
+.card{
+  background:white;
+  border-radius:12px;
+  padding:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  transition:0.2s;
+}
+
+.card:hover{transform:translateY(-4px);}
+
+.card img{
+  width:100%;
+  height:130px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.card h3{font-size:14px;margin:8px 0 4px;}
+.card p{font-size:12px;color:#666;}
+.price{font-weight:600;margin:6px 0;}
+
+.card button{
+  width:100%;
+  background:var(--accent);
+  color:white;
+  border:none;
+  padding:6px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.cart-icon{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:var(--primary);
+  color:white;
+  padding:12px;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:18px;
+}
+
+.cart-count{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  background:red;
+  color:white;
+  font-size:12px;
+  padding:2px 6px;
+  border-radius:50%;
+}
+
+.cart-modal{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.4);
+  display:none;
+  justify-content:center;
+  align-items:flex-end;
+}
+
+.cart-content{
+  background:white;
+  width:100%;
+  max-height:85%;
+  overflow:auto;
+  border-radius:15px 15px 0 0;
+  padding:15px;
+}
+
+.cart-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.qty-controls button{
+  padding:4px 8px;
+  margin:0 4px;
+}
+
+.total{
+  font-weight:600;
+  margin:10px 0;
+}
+
+.checkout-btn{
+  width:100%;
+  background:var(--accent);
+  color:white;
+  border:none;
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+form{
+  display:none;
+  flex-direction:column;
+  gap:10px;
+  margin-top:10px;
+}
+
+form input,form textarea{
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+.whatsapp{
+  position:fixed;
+  bottom:80px;
+  right:20px;
+  background:#25d366;
+  color:white;
+  padding:12px;
+  border-radius:50%;
+  text-decoration:none;
+  font-size:20px;
+}
+
+.confirmation{
+  display:none;
+  text-align:center;
+  padding:20px;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>milk.io</h1>
+<p>Good milk healthy milk</p>
+<p>Jhalawar, Rajasthan | 📞 0000000000</p>
+</header>
+
+<div class="container">
+<div class="filters">
+<button class="active" onclick="filterProducts('all')">All</button>
+<button onclick="filterProducts('milk')">Milk</button>
+</div>
+
+<div class="grid" id="productGrid"></div>
+</div>
+
+<div class="cart-icon" onclick="toggleCart()">
+🛒
+<span class="cart-count" id="cartCount">0</span>
+</div>
+
+<a class="whatsapp" href="https://wa.me/0000000000" target="_blank">💬</a>
+
+<div class="cart-modal" id="cartModal">
+<div class="cart-content">
+<h3>Your Cart</h3>
+<div id="cartItems"></div>
+<div class="total" id="cartTotal"></div>
+<button class="checkout-btn" onclick="showCheckout()">Place Order</button>
+
+<form id="orderForm" action="https://formspree.io/f/xwvndybj" method="POST">
+<input type="text" name="Customer Name" placeholder="Your Name" required>
+<input type="tel" name="Phone" placeholder="Phone Number" required>
+<textarea name="Address" placeholder="Delivery Address" required></textarea>
+<textarea name="Instructions" placeholder="Special Instructions"></textarea>
+
+<input type="hidden" name="Order Details" id="orderDetails">
+
+<button type="submit" class="checkout-btn">Submit Order</button>
+</form>
+
+<div class="confirmation" id="confirmationMsg">
+<h3>Order placed!</h3>
+<p>Milk.io will contact you on WhatsApp to confirm.</p>
+<a href="https://wa.me/0000000000" target="_blank">Chat on WhatsApp</a>
+</div>
+
+</div>
+</div>
+
+<script>
+const products = [
+{ id:1, name:"Tond Milk 500ml", price:50, category:"milk", img:"https://i.ibb.co/RkN7ZxZK/images.jpg", desc:"Pure fresh toned milk" },
+{ id:2, name:"Full Cream Milk 1L", price:60, category:"milk", img:"https://i.ibb.co/RkN7ZxZK/images.jpg", desc:"Rich full cream milk" },
+{ id:3, name:"Buffalo Milk 1L", price:70, category:"milk", img:"https://i.ibb.co/RkN7ZxZK/images.jpg", desc:"Thick buffalo milk" },
+{ id:4, name:"Cow Milk 1L", price:55, category:"milk", img:"https://i.ibb.co/RkN7ZxZK/images.jpg", desc:"Fresh cow milk" },
+{ id:5, name:"Skimmed Milk 500ml", price:45, category:"milk", img:"https://i.ibb.co/RkN7ZxZK/images.jpg", desc:"Low fat milk" },
+{ id:6, name:"Organic Milk 1L", price:80, category:"milk", img:"https://i.ibb.co/RkN7ZxZK/images.jpg", desc:"100% organic milk" },
+{ id:7, name:"A2 Milk 1L", price:90, category:"milk", img:"https://i.ibb.co/RkN7ZxZK/images.jpg", desc:"Premium A2 milk" },
+{ id:8, name:"Tond Milk 1L", price:50, category:"milk", img:"https://i.ibb.co/RkN7ZxZK/images.jpg", desc:"Pure toned milk" }
+];
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+function renderProducts(filter="all"){
+const grid = document.getElementById("productGrid");
+grid.innerHTML="";
+products.filter(p=>filter==="all"||p.category===filter)
+.forEach(p=>{
+grid.innerHTML+=`
+<div class="card">
+<img src="${p.img}" loading="lazy" alt="${p.name}">
+<h3>${p.name}</h3>
+<p>${p.desc}</p>
+<div class="price">₹${p.price}</div>
+<button onclick="addToCart(${p.id})">Add to Cart</button>
+</div>`;
+});
+}
+
+function filterProducts(cat){
+document.querySelectorAll(".filters button").forEach(btn=>btn.classList.remove("active"));
+event.target.classList.add("active");
+renderProducts(cat);
+}
+
+function addToCart(id){
+const item = cart.find(p=>p.id===id);
+if(item){ item.qty++; }
+else{
+const product = products.find(p=>p.id===id);
+cart.push({...product,qty:1});
+}
+updateCart();
+}
+
+function updateCart(){
+localStorage.setItem("cart",JSON.stringify(cart));
+document.getElementById("cartCount").innerText=cart.reduce((a,b)=>a+b.qty,0);
+renderCart();
+}
+
+function renderCart(){
+const container=document.getElementById("cartItems");
+container.innerHTML="";
+let total=0;
+
+cart.forEach(item=>{
+let sub=item.price*item.qty;
+total+=sub;
+container.innerHTML+=`
+<div class="cart-item">
+<div>
+<strong>${item.name}</strong><br>
+₹${item.price} x ${item.qty} = ₹${sub}
+</div>
+<div class="qty-controls">
+<button onclick="changeQty(${item.id},-1)">-</button>
+<button onclick="changeQty(${item.id},1)">+</button>
+<button onclick="removeItem(${item.id})">x</button>
+</div>
+</div>`;
+});
+
+document.getElementById("cartTotal").innerText="Total: ₹"+total;
+}
+
+function changeQty(id,delta){
+const item=cart.find(p=>p.id===id);
+item.qty+=delta;
+if(item.qty<=0) cart=cart.filter(p=>p.id!==id);
+updateCart();
+}
+
+function removeItem(id){
+cart=cart.filter(p=>p.id!==id);
+updateCart();
+}
+
+function toggleCart(){
+document.getElementById("cartModal").style.display="flex";
+}
+
+window.onclick=function(e){
+if(e.target.id==="cartModal"){
+document.getElementById("cartModal").style.display="none";
+}
+}
+
+function showCheckout(){
+if(cart.length===0){alert("Cart is empty");return;}
+document.getElementById("orderForm").style.display="flex";
+}
+
+document.getElementById("orderForm").addEventListener("submit",function(){
+let summary="";
+let total=0;
+cart.forEach(item=>{
+summary+=`${item.name} - Qty: ${item.qty} - ₹${item.price*item.qty}\n`;
+total+=item.price*item.qty;
+});
+summary+=`\nGrand Total: ₹${total}`;
+document.getElementById("orderDetails").value=summary;
+
+localStorage.removeItem("cart");
+cart=[];
+updateCart();
+document.getElementById("orderForm").style.display="none";
+document.getElementById("confirmationMsg").style.display="block";
+});
+
+renderProducts();
+updateCart();
+</script>
+
+</body>
+  </html>
